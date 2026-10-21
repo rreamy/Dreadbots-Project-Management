@@ -1,0 +1,55 @@
+version: "3.9"
+
+services:
+  mariadb:
+    image: mariadb:11
+    container_name: dreadbots-mariadb
+    restart: unless-stopped
+    environment:
+      MARIADB_DATABASE: dreadbots_pm
+      MARIADB_USER: dreadbots
+      MARIADB_PASSWORD: dreadbotspass
+      MARIADB_ROOT_PASSWORD: rootpass
+    ports:
+      - "3306:3306"
+    volumes:
+      - db-data:/var/lib/mysql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
+      - ./database/seed.sql:/docker-entrypoint-initdb.d/02-seed.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h localhost -uroot -prootpass --silent"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: dreadbots-backend
+    restart: unless-stopped
+    depends_on:
+      mariadb:
+        condition: service_healthy
+    environment:
+      DB_URL: jdbc:mariadb://mariadb:3306/dreadbots_pm
+      DB_USERNAME: root
+      DB_PASSWORD: rootpass
+      JWT_SECRET: change-me-to-a-long-random-secret-value
+      JWT_EXPIRATION_MS: 86400000
+    ports:
+      - "8080:8080"
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: dreadbots-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+
+volumes:
+  db-data:

@@ -1,56 +1,55 @@
 # Dreadbots Project Management
 
-A lightweight project management system for robotics teams, inspired by Jira but intentionally simplified.
+A lightweight Jira-style project management tool for a high school robotics team.
 
-This repository contains the initial MariaDB schema for tracking team work, sprint tasks, labels, and users.
+## Project structure
+- `database/` contains the MariaDB schema and sample data
+- `backend/` contains the Java Spring Boot API
+- `frontend/` contains the React UI
 
-## Goals
-- Track team stories/tasks for a robotics season
-- Assign work to students and mentors
-- Organize work by label and status
-- Reset the database each season without a complex project system
-- Keep setup simple, maintainable, and easy to host
+## Features
+- user login
+- story/task management
+- assignment to team members
+- labels and status tracking
+- simple board view
+- season reset support
 
-## Core entities
-- Teams
-- Seasons
-- Users
-- Stories
-- Labels
-- Story-to-label links
-- Story comments
+## Run locally with Docker Compose
 
-## Schema overview
+From the repository root:
 
-The schema is designed for:
-- one team or one season per database instance
-- easier reset between competition years
-- status tracking for backlog, in-progress, blocked, and completed work
-- label-based filtering such as CAD, Electrical, Software, Drivetrain, Testing, Safety, and Competition
+```bash
+docker compose up --build
+```
 
-## Database technology
-- MariaDB
-- SQL schema with foreign keys and indexes
+This starts:
+- MariaDB on `localhost:3306`
+- Spring Boot backend on `http://localhost:8080`
+- React frontend on `http://localhost:80`
 
-## Quick start
+## Run database manually
 
-1. Create the database:
-   ```sql
-   CREATE DATABASE dreadbots_pm;
-   USE dreadbots_pm;
-   ```
+```bash
+mysql -u root -p < database/schema.sql
+```
 
-2. Run the schema:
-   ```bash
-   mysql -u root -p dreadbots_pm < database/schema.sql
-   ```
+## Backend run
 
-3. Optionally load sample data:
-   ```bash
-   mysql -u root -p dreadbots_pm < database/seed.sql
-   ```
+```bash
+cd backend
+mvn spring-boot:run
+```
+
+## Frontend run
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
 
 ## Notes
-- The schema assumes one team per database instance for simplicity.
-- Passwords are stored as hashed values in the `users` table.
-- `story_comments` and `story_history` are included so the app can support lightweight collaboration without full Jira complexity.
+- This project intentionally keeps the feature set small and maintainable.
+- Passwords should be replaced with real bcrypt hashes before production use.
+- The database can be reset each season by recreating or dropping the tables.
